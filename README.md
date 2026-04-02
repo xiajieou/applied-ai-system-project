@@ -11,23 +11,55 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+This version simulates a content-based music recommender that compares a user's taste profile to song attributes in `data/songs.csv`. It uses a weighted score to favor songs that match the user's preferred genre and mood, stay close to the target energy level, and optionally align with acoustic taste. Real platforms like Spotify or YouTube often combine this kind of content-based logic with collaborative filtering from other users' behavior, but this project focuses on the song features themselves so the ranking process stays transparent.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+This recommender uses a content-based scoring system. Each `Song` includes genre, mood, energy, tempo_bpm, valence, danceability, and acousticness, while the `UserProfile` stores a favorite genre, favorite mood, target energy, and whether the user prefers acoustic music. The core idea is to score one song at a time, then rank all songs by score to produce the final list of recommendations.
 
-Some prompts to answer:
+### Algorithm Recipe
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+- Add `+2.0` points for a genre match.
+- Add `+1.0` point for a mood match.
+- Add energy similarity points based on distance from the user's target energy, with closer songs getting more points.
+- Optionally add a small bonus when `likes_acoustic` matches the song's acousticness trend.
 
-You can include a simple diagram or bullet list if helpful.
+This balance should help the system tell the difference between songs like intense rock and chill lofi. Genre should matter more than mood when the user has a strong preference, but energy should still be important so two songs in the same genre do not always tie.
+
+### Proposed User Profile
+
+```python
+user_prefs = {
+   "favorite_genre": "lofi",
+   "favorite_mood": "chill",
+   "target_energy": 0.4,
+   "likes_acoustic": True,
+}
+```
+
+This profile should rank calm, low-energy songs highly while still allowing the recommender to distinguish between a relaxed track and an overly sleepy one.
+
+### Dataset Expansion Plan
+
+The starter CSV is a good base, but I would expand it with 5 to 10 more songs that cover genres and moods not already represented as strongly in the starter set. Good additions would include hip hop, R&B, electronic, classical, metal, and upbeat dance tracks. I would also make sure the added songs vary across energy, valence, danceability, and acousticness so the recommender has more than one way to separate songs.
+
+### Bias Note
+
+This system may over-prioritize genre and energy, which could hide songs that match the user's mood but come from a different style. If the catalog is small or uneven, the recommender may also create a narrow filter bubble and keep suggesting very similar songs.
+
+### Data Flow
+
+```mermaid
+flowchart LR
+   A[User Prefs] --> B[Score Each Song]
+   C[data/songs.csv] --> B
+   B --> D[Rank All Songs]
+   D --> E[Top K Recommendations]
+```
+
+In other words, the input is the user's taste profile, the process scores each song from the CSV one by one, and the output is a ranked list of the best matches. That separation makes the logic easier to explain, test, and tune.
 
 ---
 
