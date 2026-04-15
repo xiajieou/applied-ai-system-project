@@ -5,6 +5,16 @@ from dataclasses import dataclass
 import csv
 
 
+DEFAULT_WEIGHTS: Dict[str, float] = {
+    "genre_weight": 2.0,
+    "mood_weight": 1.0,
+    "energy_max_points": 1.5,
+    "energy_penalty_factor": 2.5,
+    "acoustic_high_bonus": 0.5,
+    "acoustic_low_bonus": 0.2,
+}
+
+
 def _parse_float(value: Any, default: float = 0.0) -> float:
     try:
         return float(value)
@@ -27,52 +37,76 @@ def _song_from_dict(song_data: Dict[str, Any]) -> Song:
     )
 
 
-def _score_song_like(user_genre: str, user_mood: str, target_energy: float, likes_acoustic: bool, song: Song) -> Tuple[float, str]:
+def _merged_weights(weights: Dict[str, float] | None = None) -> Dict[str, float]:
+    merged = dict(DEFAULT_WEIGHTS)
+    if weights:
+        merged.update(weights)
+    return merged
+
+
+def _score_song_like(
+    user_genre: str,
+    user_mood: str,
+    target_energy: float,
+    likes_acoustic: bool,
+    song: Song,
+    weights: Dict[str, float] | None = None,
+) -> Tuple[float, str]:
+    w = _merged_weights(weights)
     score = 0.0
     reasons: List[str] = []
 
     if song.genre.strip().lower() == user_genre.strip().lower():
-        score += 2.0
-        reasons.append("genre matches")
+        score += w["genre_weight"]
+        reasons.append(f"genre matches (+{w['genre_weight']:.2f})")
 
     if song.mood.strip().lower() == user_mood.strip().lower():
-        score += 1.0
-        reasons.append("mood matches")
+        score += w["mood_weight"]
+        reasons.append(f"mood matches (+{w['mood_weight']:.2f})")
 
     energy_gap = abs(song.energy - target_energy)
-    energy_points = max(0.0, 1.5 - energy_gap * 2.5)
+    energy_points = max(0.0, w["energy_max_points"] - energy_gap * w["energy_penalty_factor"])
     score += energy_points
     reasons.append(f"energy is close ({energy_points:.2f} points)")
 
     acoustic_bonus = 0.0
     if likes_acoustic and song.acousticness >= 0.65:
-        acoustic_bonus = 0.5
+        acoustic_bonus = w["acoustic_high_bonus"]
         score += acoustic_bonus
-        reasons.append("fits acoustic preference")
+        reasons.append(f"fits acoustic preference (+{acoustic_bonus:.2f})")
     elif not likes_acoustic and song.acousticness <= 0.35:
-        acoustic_bonus = 0.2
+        acoustic_bonus = w["acoustic_low_bonus"]
         score += acoustic_bonus
-        reasons.append("matches low-acoustic preference")
+        reasons.append(f"matches low-acoustic preference (+{acoustic_bonus:.2f})")
 
     explanation = "; ".join(reasons) if reasons else "baseline score from feature similarity"
     return score, explanation
 
 
-def score_song(user_prefs: Dict[str, Any], song: Dict[str, Any]) -> Tuple[float, List[str]]:
+def score_song(
+    user_prefs: Dict[str, Any],
+    song: Dict[str, Any],
+    weights: Dict[str, float] | None = None,
+) -> Tuple[float, List[str]]:
     """Score one song against a user profile and return the score with reasons."""
     song_object = _song_from_dict(song)
-    score, explanation = _score_song_from_prefs(user_prefs, song_object)
+    score, explanation = _score_song_from_prefs(user_prefs, song_object, weights)
     reasons = [part.strip() for part in explanation.split(";") if part.strip()]
     return score, reasons
 
 
-def _score_song_from_prefs(user_prefs: Dict[str, Any], song: Song) -> Tuple[float, str]:
+def _score_song_from_prefs(
+    user_prefs: Dict[str, Any],
+    song: Song,
+    weights: Dict[str, float] | None = None,
+) -> Tuple[float, str]:
     return _score_song_like(
         str(user_prefs.get("favorite_genre", user_prefs.get("genre", ""))),
         str(user_prefs.get("favorite_mood", user_prefs.get("mood", ""))),
         _parse_float(user_prefs.get("target_energy", user_prefs.get("energy", 0.0))),
         bool(user_prefs.get("likes_acoustic", False)),
         song,
+        weights,
     )
 
 @dataclass
@@ -159,7 +193,12 @@ def load_songs(csv_path: str) -> List[Dict[str, Any]]:
             songs.append(song)
     return songs
 
-def recommend_songs(user_prefs: Dict[str, Any], songs: List[Dict[str, Any]], k: int = 5) -> List[Tuple[Dict[str, Any], float, List[str]]]:
+def recommend_songs(
+    user_prefs: Dict[str, Any],
+    songs: List[Dict[str, Any]],
+    k: int = 5,
+    weights: Dict[str, float] | None = None,
+) -> List[Tuple[Dict[str, Any], float, List[str]]]:
     """
     Functional implementation of the recommendation logic.
     Required by src/main.py
@@ -167,7 +206,7 @@ def recommend_songs(user_prefs: Dict[str, Any], songs: List[Dict[str, Any]], k: 
     scored_results: List[Tuple[Dict[str, Any], float, List[str]]] = []
 
     for song_data in songs:
-        score, reasons = score_song(user_prefs, song_data)
+        score, reasons = score_song(user_prefs, song_data, weights)
         scored_results.append((song_data, score, reasons))
 
     scored_results.sort(key=lambda item: item[1], reverse=True)

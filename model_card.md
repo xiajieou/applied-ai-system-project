@@ -70,6 +70,10 @@ Prompts:
 - Cases where the system overfits to one preference  
 - Ways the scoring might unintentionally favor some users  
 
+Phase 4 findings:
+
+The catalog is very small (10 songs), so the model often repeats similar tracks at the top. Genre and energy can dominate the score, which may hide songs with good mood alignment but different style. Because the scoring is hand-tuned for a fixed feature set, users with mixed or unusual preferences are not represented well. This can create a small filter bubble where users mostly get one type of song.
+
 ---
 
 ## 7. Evaluation  
@@ -82,6 +86,10 @@ Prompts:
 - What you looked for in the recommendations  
 - What surprised you  
 - Any simple tests or comparisons you ran  
+
+Phase 4 evaluation runs:
+
+Tested three profiles: High-Energy Pop, Chill Lofi, and Deep Intense Rock. For each profile, the CLI returned top-5 recommendations with reasons. Results mostly matched expectations: Chill Lofi favored `Library Rain` and `Midnight Coding`, while Deep Intense Rock ranked `Storm Runner` first. I also ran a sensitivity experiment by halving genre weight and doubling energy contribution. The top-3 order for High-Energy Pop stayed the same, but score margins shifted, which suggests rankings are stable when the dataset has strong feature separation.
 
 No need for numeric metrics unless you created some.
 
