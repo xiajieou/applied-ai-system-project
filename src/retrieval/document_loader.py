@@ -41,15 +41,12 @@ Each song in the system has the following attributes:
    - Usage: Conditional bonus if user like_acoustic
    - Max points: 1.5 (peak at user's target, decreases with distance)
 
+5. **tempo_bpm** (integer): Beats per minute
+   - Range: 60-180 BPM typical
+   - Usage: Context only (not scored, but explains pacing)
 
-
-
-
-
-
-
-
-
-
-
+6. **valence** (float, 0.0-1.0): Musical positivity/happiness
+   - 0.0 = Sad, dark, negative mood
+   - 1.0 = Happy, upbeat, positive mood
+   - Usage: Context only (supports genre interpretation)   
 """
