@@ -49,4 +49,46 @@ Each song in the system has the following attributes:
    - 0.0 = Sad, dark, negative mood
    - 1.0 = Happy, upbeat, positive mood
    - Usage: Context only (supports genre interpretation)   
+
+7. **danceability** (float, 0,0-1.0): Rhythmic groove/beat clarity
+   - 0.0 = Not danceable (spoken word, free form)
+   - 1.0 = Highly danceable (electronic dance, funk, pop)
+   - Usage: Context only (supports genre interpretation)
+"""
+
+USER_PREFERENCE_RULES  = """ 
+USER PREFERENCE RULES
+=====================
+
+The recommendation system learns from four core user preference signals:
+
+1. **favorite_genre** (string): Primary music taste
+   - Definition: The genre the user most enjoys listening to
+   - Scoring rule: Exact genre match = +2.0 points (highest weight)
+   - Interpretation: Users strongly prefer songs in their favorite genre
+
+2. **favorite_mood** (string): Preferred emotional tone
+   - Definition: The emotional atmosphere the user seeks
+   - Scoring rule: Exact mood match = +1.0 points
+   - Interpretation: Users want songs that match their current emotional state
+
+3. **target_energy** (float, 0.0-1.0): Desired intensity level
+   - Definition: The energetic level (calm vs. intense) user prefers
+   - Scoring rule:
+     * Peak points (1.5) at exact target energy
+     * Decreases with distance: max(0, 1.5 - 2.5 * abs(song_energy - target_energy))
+     * Penalty factor of 2.5 ensures steep falloff
+   - Interpretation: Users have a sweet spot for activity level
+
+4. **likes_acoustic** (boolean): Acoustic vs. electronic preference
+   - Definition: Whether user prefers acoustic instruments over electronics
+   - Scoring rule (if True):
+     * If acousticness > 0.5: +0.5 bonus points
+     * If acousticness <= 0.5: +0.2 bonus points
+   - Interpretation: Enables differentiation between similar genres
+
+COMBINING PREFERENCES:
+- All scores are additive and normalized
+- A song can score at most: 2.0 (genre) + 1.0 (mood) + 1.5 (energy) + 0.5 (acoustic) = 5.0 points
+- Top-k recommendations selected by highest total score
 """
