@@ -2,14 +2,9 @@
 
 ## Project Summary
 
-This project simulates a content-based music recommender that scores songs from `data/songs.csv` against a user's taste profile. The scoring is transparent and explainable, so each recommendation includes both a numeric score and plain-language reasons.
+This project started as the Module 3 music recommender simulation and was extended into a fuller applied AI system. It still scores songs from `data/songs.csv` against a user's taste profile, but now it also uses retrieval-augmented guidance, a visible agentic workflow trace, specialized scoring behavior, and a repeatable evaluation harness.
 
-Real-world systems (Spotify, YouTube, TikTok) often combine:
-
-- Collaborative filtering: recommendations from crowd behavior (likes, skips, playlists, watch time)
-- Content-based filtering: recommendations from item features (genre, mood, energy, tempo)
-
-This project focuses on content-based filtering so the algorithm is easy to inspect and debug.
+Real-world recommenders often mix content-based features, retrieval of product or policy guidance, and evaluation loops. This project keeps the logic explainable so it can be inspected, debugged, and discussed as a classroom-sized AI system.
 
 ## How the System Works
 
@@ -17,6 +12,22 @@ This project focuses on content-based filtering so the algorithm is easy to insp
 
 - Song features: `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`
 - User profile features: `favorite_genre`, `favorite_mood`, `target_energy`, `likes_acoustic`
+- Retrieval guidance: document snippets about scoring rules and specialization behavior
+- Workflow trace: plan, retrieve, score, verify, reflect
+
+### Architecture Overview
+
+```mermaid
+flowchart LR
+  A[User Profile] --> B[Agentic Workflow]
+  B --> C[RAG Document Loader]
+  C --> D[Contextual Weight Tuning]
+  D --> E[Song Scoring]
+  E --> F[Verification + Reflection]
+  F --> G[Top-K Recommendations + Trace]
+  H[Evaluation Harness] --> B
+  H --> I[Summary Metrics]
+```
 
 ### Algorithm Recipe
 
@@ -24,6 +35,8 @@ This project focuses on content-based filtering so the algorithm is easy to insp
 - `+1.0` for mood match
 - Up to `+1.5` for energy similarity (closer energy to target gets more points)
 - Acoustic bonus (`+0.5` for acoustic-preferring users, `+0.2` for low-acoustic-preferring users)
+- RAG slightly adjusts the weights for the current profile so retrieved guidance can influence scoring
+- Specialized mode applies a different weight profile for low-energy, high-energy, or mood-focused users
 
 The score is calculated per song, then all songs are ranked highest-to-lowest and top `k` are returned.
 
@@ -31,49 +44,22 @@ The score is calculated per song, then all songs are ranked highest-to-lowest an
 
 ```mermaid
 flowchart LR
-  A[User Preferences] --> B[Score One Song]
-  C[data/songs.csv] --> B
-  B --> D[Repeat for all songs]
-  D --> E[Sort by score]
+  A[User Preferences] --> B[Retrieve Guidance]
+  B --> C[Adjust Weights]
+  C --> D[Score Songs]
+  D --> E[Verify and Reflect]
   E --> F[Top K Recommendations]
 ```
 
-## Phase 4 Evaluation
+## Evaluation Harness
 
-### Profiles Tested
-
-- High-Energy Pop
-- Chill Lofi
-- Deep Intense Rock
-
-### Observed Output Snapshot
-
-Command used:
+Run the built-in evaluation to compare baseline, RAG, and specialized modes across the three demo profiles.
 
 ```bash
-python -m src.main
+python -m src.evaluation
 ```
 
-Key results:
-
-- `High-Energy Pop`: top songs were `Sunrise City`, `Gym Hero`, `Rooftop Lights`
-- `Chill Lofi`: top songs were `Library Rain`, `Midnight Coding`, `Focus Flow`
-- `Deep Intense Rock`: top songs were `Storm Runner`, `Gym Hero`, `Sunrise City`
-
-### Sensitivity Experiment
-
-Test run: halve genre weight and double max energy contribution.
-
-- Baseline top-3 for `High-Energy Pop`: `Sunrise City`, `Gym Hero`, `Rooftop Lights`
-- Weight-shift top-3 for `High-Energy Pop`: `Sunrise City`, `Gym Hero`, `Rooftop Lights`
-
-Interpretation: ranking order stayed stable for the strongest profile matches, but score gaps changed. This suggests the current small dataset has clear high-energy winners, so modest weight changes affect confidence more than order.
-
-### Bias and Limitations (Quick Note)
-
-- Small dataset (10 songs) limits diversity.
-- Genre and energy can dominate ranking when matches are strong.
-- The model can create a mini filter bubble by repeatedly recommending similar songs.
+The harness reports profile counts, score comparisons, and trace length so you can summarize reliability in the README and model card.
 
 ## Setup and Run
 
@@ -92,12 +78,34 @@ python -m pytest -q
 
 - Detailed model documentation: `model_card.md`
 - Pairwise profile comparison notes: `reflection.md`
+- Evaluation harness: `python -m src.evaluation`
 
-## 9. Personal Reflection
+## Sample Interactions
 
-A few sentences about what you learned:
+1. High-Energy Pop profile returns upbeat, high-energy songs near the top.
+2. Chill Lofi profile returns low-energy, acoustic-leaning songs first.
+3. Deep Intense Rock profile shifts toward energetic, genre-matched songs.
 
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
+## Design Decisions
+
+- Keep the scoring rules transparent instead of using a black-box model.
+- Use RAG to ground the scoring logic in explicit project guidance.
+- Use a specialized mode to demonstrate that different settings can change the ranking behavior.
+- Keep the workflow trace visible so the system can be explained to a reviewer.
+
+## Testing Summary
+
+- Unit tests cover the recommender, retrieval loader, workflow trace, and evaluation harness.
+- The project currently verifies that RAG changes scores and that the workflow emits plan/retrieve/reflect steps.
+- The evaluation harness compares baseline, RAG, and specialized output across a fixed set of profiles.
+
+## Reflection
+
+This project taught me that a small, explainable scoring system can still behave like a real AI application when it is wrapped with retrieval, a workflow trace, and evaluation. It also showed me that documentation and testing matter as much as the ranking logic itself when the goal is a portfolio-ready system.
+
+## Portfolio / Demo
+
+- GitHub repository: add the final public repo link here.
+- Loom walkthrough: add the video link here before submission.
+
 
