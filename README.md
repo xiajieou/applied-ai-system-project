@@ -39,6 +39,31 @@ flowchart LR
   G --> H[mode summary metrics]
 ```
 
+## Architecture Diagram
+
+An explicit diagram of the system is included in `assets/architecture.mmd`. The same Mermaid diagram is embedded below for quick viewing on GitHub:
+
+```mermaid
+flowchart LR
+  subgraph CLI
+    A[main.py] --> B[Recommendation Workflow]
+  end
+  B --> C[Document Loader (RAG)]
+  C --> D[Recommender (score & rank)]
+  D --> E[Top-K Recommendations + Explanations]
+  B --> F[Specialization Module]
+  subgraph Eval
+    G[evaluation.py] --> B
+  end
+  style A fill:#f8f9fa,stroke:#333,stroke-width:1px
+  style B fill:#e6f7ff,stroke:#339,stroke-width:1px
+  style C fill:#fff0f6,stroke:#c33,stroke-width:1px
+  style D fill:#f3fff0,stroke:#393,stroke-width:1px
+  style E fill:#fff7e6,stroke:#993,stroke-width:1px
+  style F fill:#f0f5ff,stroke:#36f,stroke-width:1px
+  style G fill:#f7f0ff,stroke:#63f,stroke-width:1px
+```
+
 ### Algorithm Recipe
 
 - `+2.0` for genre match
