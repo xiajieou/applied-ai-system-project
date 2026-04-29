@@ -28,16 +28,6 @@ After that, `evaluation.py` compares baseline, RAG, and specialized runs so the 
 
 ### Architecture Overview
 
-```mermaid
-flowchart LR
-  A[main.py: load songs and profiles] --> B[workflow.py: trace the run]
-  B --> C[document_loader.py: retrieve guidance]
-  C --> D[recommender.py: tune weights and score songs]
-  D --> E[rank top-k recommendations]
-  E --> F[verify spread and reflect]
-  G[evaluation.py: compare modes] --> B
-  G --> H[mode summary metrics]
-```
 
 ## Architecture Diagram
 
