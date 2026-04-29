@@ -7,7 +7,7 @@ but it demonstrates the structure required for an agentic system.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 from src.recommender import recommend_songs
 from src.retrieval.document_loader import get_document_loader
@@ -49,14 +49,14 @@ class RecommendationWorkflow:
         else:
             logs.append({"step": "RETRIEVE", "message": "RAG disabled; using baseline scoring context."})
 
-        weights = None
+        tuned_weights = weights
         if mode == "specialized":
-            weights = build_specialized_weights(user_prefs, weights)
+            tuned_weights = build_specialized_weights(user_prefs, tuned_weights)
             logs.append({"step": "SPECIALIZE", "message": "Applied specialized weight profile for the current user."})
-        elif weights is not None:
+        elif tuned_weights is not None:
             logs.append({"step": "SPECIALIZE", "message": "Applied custom weight overrides for this run."})
 
-        recommendations = recommend_songs(user_prefs, songs, k=k, weights=weights, use_rag=use_rag)
+        recommendations = recommend_songs(user_prefs, songs, k=k, weights=tuned_weights, use_rag=use_rag)
         logs.append({"step": "SCORE", "message": f"Ranked {len(songs)} song(s) and returned top {len(recommendations)}."})
 
         if recommendations:
@@ -75,7 +75,7 @@ class RecommendationWorkflow:
         return {
             "mode": mode,
             "context": context_prompt,
-            "weights": weights,
+            "weights": tuned_weights,
             "recommendations": recommendations,
             "logs": logs,
         }
