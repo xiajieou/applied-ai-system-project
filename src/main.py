@@ -12,6 +12,7 @@ You will implement the functions in recommender.py:
 from typing import Any, Dict, List, Tuple
 
 from src.recommender import load_songs, recommend_songs
+from src.workflow import RecommendationWorkflow
 
 
 def _print_recommendations(
@@ -20,9 +21,17 @@ def _print_recommendations(
     songs: List[Dict[str, Any]],
     k: int = 5,
     weights: Dict[str, float] | None = None,
+    mode: str = "baseline",
+    use_rag: bool = True,
 ) -> List[Tuple[Dict[str, Any], float, List[str]]]:
-    recommendations = recommend_songs(profile, songs, k=k, weights=weights)
+    workflow = RecommendationWorkflow()
+    result = workflow.run(profile, songs, k=k, mode=mode, use_rag=use_rag)
+    recommendations = result["recommendations"]
+
     print(f"\n=== {profile_name} ===")
+    for entry in result["logs"]:
+        print(f"[{entry['step']}] {entry['message']}")
+
     for index, rec in enumerate(recommendations, start=1):
         song, score, reasons = rec
         reasons_text = "; ".join(reasons)
@@ -68,7 +77,7 @@ def main() -> None:
     print("\nTop recommendations by profile:")
     baseline_results: Dict[str, List[Tuple[Dict[str, Any], float, List[str]]]] = {}
     for profile_name, profile in profiles:
-        baseline_results[profile_name] = _print_recommendations(profile_name, profile, songs, k=5)
+        baseline_results[profile_name] = _print_recommendations(profile_name, profile, songs, k=5, mode="baseline", use_rag=True)
 
     print("\n=== Sensitivity Experiment: Weight Shift ===")
     print("Applied change: halve genre weight, double max energy contribution")
@@ -89,6 +98,8 @@ def main() -> None:
         songs,
         k=5,
         weights=shifted_weights,
+        mode="specialized",
+        use_rag=True,
     )
 
     baseline_titles = [song[0]["title"] for song in baseline_results[target_profile_name][:3]]
