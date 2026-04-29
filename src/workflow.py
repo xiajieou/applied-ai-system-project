@@ -27,6 +27,7 @@ class RecommendationWorkflow:
         k: int = 5,
         mode: str = "baseline",
         use_rag: bool = True,
+        weights: Dict[str, float] | None = None,
     ) -> Dict[str, Any]:
         logs: List[Dict[str, str]] = []
         logs.append({"step": "PLAN", "message": f"Starting recommendation workflow in {mode} mode."})
@@ -50,8 +51,10 @@ class RecommendationWorkflow:
 
         weights = None
         if mode == "specialized":
-            weights = build_specialized_weights(user_prefs)
+            weights = build_specialized_weights(user_prefs, weights)
             logs.append({"step": "SPECIALIZE", "message": "Applied specialized weight profile for the current user."})
+        elif weights is not None:
+            logs.append({"step": "SPECIALIZE", "message": "Applied custom weight overrides for this run."})
 
         recommendations = recommend_songs(user_prefs, songs, k=k, weights=weights, use_rag=use_rag)
         logs.append({"step": "SCORE", "message": f"Ranked {len(songs)} song(s) and returned top {len(recommendations)}."})

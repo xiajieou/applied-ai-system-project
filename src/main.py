@@ -11,7 +11,7 @@ You will implement the functions in recommender.py:
 
 from typing import Any, Dict, List, Tuple
 
-from src.recommender import load_songs, recommend_songs
+from src.recommender import load_songs
 from src.workflow import RecommendationWorkflow
 
 
@@ -25,7 +25,7 @@ def _print_recommendations(
     use_rag: bool = True,
 ) -> List[Tuple[Dict[str, Any], float, List[str]]]:
     workflow = RecommendationWorkflow()
-    result = workflow.run(profile, songs, k=k, mode=mode, use_rag=use_rag)
+    result = workflow.run(profile, songs, k=k, mode=mode, use_rag=use_rag, weights=weights)
     recommendations = result["recommendations"]
 
     print(f"\n=== {profile_name} ===")
