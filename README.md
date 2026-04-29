@@ -129,6 +129,6 @@ This project taught me that a small, explainable scoring system can still behave
 ## Portfolio / Demo
 
 - GitHub repository: add the final public repo link here.
-- Loom walkthrough: add the video link here before submission.
+- Loom walkthrough: https://www.loom.com/share/31ab6d44f2a2424286be30ef3f2408c8
 
 
