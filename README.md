@@ -8,6 +8,17 @@ Real-world recommenders often mix content-based features, retrieval of product o
 
 ## How the System Works
 
+### Current Workflow
+
+The current setup runs in four layers:
+
+1. `main.py` loads the song catalog and defines the demo listener profiles.
+2. `workflow.py` wraps each run in a visible agent-style trace: plan, retrieve, specialize, score, verify, reflect.
+3. `document_loader.py` provides the retrieval context used by RAG when the workflow is in guided mode.
+4. `recommender.py` scores every song, ranks the results, and returns human-readable reasons.
+
+After that, `evaluation.py` compares baseline, RAG, and specialized runs so the project can show behavior differences across modes.
+
 ### Features Used
 
 - Song features: `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`
@@ -19,14 +30,13 @@ Real-world recommenders often mix content-based features, retrieval of product o
 
 ```mermaid
 flowchart LR
-  A[User Profile] --> B[Agentic Workflow]
-  B --> C[RAG Document Loader]
-  C --> D[Contextual Weight Tuning]
-  D --> E[Song Scoring]
-  E --> F[Verification + Reflection]
-  F --> G[Top-K Recommendations + Trace]
-  H[Evaluation Harness] --> B
-  H --> I[Summary Metrics]
+  A[main.py: load songs and profiles] --> B[workflow.py: trace the run]
+  B --> C[document_loader.py: retrieve guidance]
+  C --> D[recommender.py: tune weights and score songs]
+  D --> E[rank top-k recommendations]
+  E --> F[verify spread and reflect]
+  G[evaluation.py: compare modes] --> B
+  G --> H[mode summary metrics]
 ```
 
 ### Algorithm Recipe
@@ -47,8 +57,9 @@ flowchart LR
   A[User Preferences] --> B[Retrieve Guidance]
   B --> C[Adjust Weights]
   C --> D[Score Songs]
-  D --> E[Verify and Reflect]
-  E --> F[Top K Recommendations]
+  D --> E[Rank Results]
+  E --> F[Verify and Reflect]
+  F --> G[Top K Recommendations + Reasons]
 ```
 
 ## Evaluation Harness

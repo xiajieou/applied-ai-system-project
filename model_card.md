@@ -47,7 +47,19 @@ The retrieval layer also uses small hand-written guidance documents that describ
 - The retrieval layer makes the scoring process easier to explain.
 - The workflow trace makes it easier to show what the system is doing step by step.
 
-## 6. Limitations and Biases
+## 6. System Design Workflow
+
+The current setup follows this sequence:
+
+1. `src/main.py` loads the catalog and creates the demo listener profiles.
+2. `src/workflow.py` starts a run and logs the visible steps for plan, retrieve, specialize, score, verify, and reflect.
+3. `src/retrieval/document_loader.py` provides the RAG context so the recommender can ground its scoring in project guidance.
+4. `src/recommender.py` applies the scoring rules, adjusts weights when needed, ranks the songs, and returns explanations.
+5. `src/evaluation.py` runs the same profiles through baseline, RAG, and specialized modes to compare behavior.
+
+This design keeps the system easy to explain because each layer has a clear responsibility and a visible output.
+
+## 7. Limitations and Biases
 
 - Small dataset size limits diversity and can repeat similar songs.
 - Genre and energy can dominate the score, reducing exploration.
@@ -56,7 +68,7 @@ The retrieval layer also uses small hand-written guidance documents that describ
 - The retrieval documents are handcrafted, so they can reflect the author's assumptions.
 - Specialized mode is still rule-based, not a trained fine-tune, so it is only a lightweight specialization demo.
 
-## 7. Evaluation Process
+## 8. Evaluation Process
 
 Profiles tested:
 
@@ -81,7 +93,7 @@ Interpretation:
 
 The system is stable for strong matches in this small catalog, but the retrieval and specialization layers can nudge scores and explanations in a controlled way. That makes the project better for showing how AI systems can be grounded and evaluated without becoming opaque.
 
-## 8. Ideas for Improvement
+## 9. Ideas for Improvement
 
 - Expand the catalog with more genres, moods, and edge-case songs.
 - Add diversity logic so top results are not all near-duplicates.
@@ -89,7 +101,7 @@ The system is stable for strong matches in this small catalog, but the retrieval
 - Replace the rule-based specialization with a learned profile adapter if a larger dataset becomes available.
 - Track offline evaluation metrics across multiple profiles and retrieval settings.
 
-## 9. Personal Reflection
+## 10. Personal Reflection
 
 The biggest learning moment was seeing how a very small amount of math can create recommendations that feel believable. I learned that scoring and ranking are separate jobs: scoring gives each song a number, while ranking decides which numbers matter most to the user.
 
