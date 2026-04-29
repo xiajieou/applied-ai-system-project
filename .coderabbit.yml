@@ -1,0 +1,19 @@
+language: "en"
+
+reviews:
+  profile: "chill"
+  path_instructions:
+    - path: "src/**/*.py"
+      instructions: |
+        Focus on correctness, simple control flow, and preserving the current recommender behavior.
+        Check for regressions in scoring, workflow tracing, retrieval context, and evaluation output.
+    - path: "tests/**/*.py"
+      instructions: |
+        Keep tests deterministic and narrowly scoped.
+        Prefer explicit assertions over broad snapshots.
+    - path: "README.md"
+      instructions: |
+        Verify that the documentation matches the implemented behavior and that file references are accurate.
+
+chat:
+  auto_reply: true
