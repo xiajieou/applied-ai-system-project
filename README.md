@@ -31,17 +31,7 @@ After that, `evaluation.py` compares baseline, RAG, and specialized runs so the 
 
 ## Architecture Diagram
 
-An explicit diagram of the system is included in `assets/architecture.mmd`. The same Mermaid diagram is embedded below for quick viewing on GitHub:
-
-```mermaid
-flowchart LR
-  A[main.py] --> B[Recommendation Workflow]
-  B --> C[Document Loader]
-  C --> D[Recommender]
-  D --> E[Top-K Results]
-  B --> F[Specialization Module]
-  G[Evaluation] --> B
-```
+The system architecture diagram is embedded below for quick viewing on GitHub:
 ```mermaid
 flowchart LR
   subgraph CLI
